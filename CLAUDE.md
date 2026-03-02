@@ -2,6 +2,8 @@
 
 Spring Boot demo project exploring hexagonal architecture patterns with Java.
 
+**GitHub:** https://github.com/jsicree/claude-java-demo
+
 ## Stack
 
 - **Java** 17
