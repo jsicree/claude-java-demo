@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>claude-java-demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f7fa;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      color: #555;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .badge {
+      background: #e8eaf6;
+      color: #3949ab;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+    }
+
+    .links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #3949ab;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .links a:hover { background: #283593; }
+
+    .links a.secondary {
+      background: #fff;
+      color: #3949ab;
+      border: 1px solid #c5cae9;
+    }
+
+    .links a.secondary:hover { background: #e8eaf6; }
+
+    hr {
+      border: none;
+      border-top: 1px solid #dde1f0;
+      margin: 2rem 0;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #1a1a2e;
+    }
+
+    .domain { margin-bottom: 2rem; }
+
+    .domain h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #3949ab;
+      margin-bottom: 0.75rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      font-size: 0.875rem;
+    }
+
+    thead tr { background: #e8eaf6; }
+
+    th {
+      text-align: left;
+      padding: 0.65rem 1rem;
+      font-weight: 600;
+      color: #3949ab;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td { padding: 0.65rem 1rem; border-top: 1px solid #f0f0f8; }
+
+    tr:hover td { background: #fafafe; }
+
+    .method {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      min-width: 48px;
+      text-align: center;
+    }
+
+    .get  { background: #e3f2fd; color: #1565c0; }
+    .post { background: #e8f5e9; color: #2e7d32; }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.82rem;
+      background: #f0f0f8;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .arch {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 1.25rem 1.5rem;
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+
+    .arch ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .arch li::before { content: "→ "; color: #3949ab; font-weight: 700; }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: 0.8rem;
+      color: #999;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <h1>claude-java-demo</h1>
+      <p>
+        A Spring Boot REST API demonstrating <strong>hexagonal (Ports &amp; Adapters)</strong> architecture.
+        Domain logic is fully isolated from framework concerns; persistence is backed by MySQL via JPA.
+      </p>
+      <div class="badges">
+        <span class="badge">Java 17</span>
+        <span class="badge">Spring Boot 4.0</span>
+        <span class="badge">Spring Data JPA</span>
+        <span class="badge">MySQL 8.4</span>
+        <span class="badge">Docker</span>
+      </div>
+      <div class="links">
+        <a href="/swagger-ui/index.html">Swagger UI</a>
+        <a href="/v3/api-docs" class="secondary">OpenAPI JSON</a>
+      </div>
+    </header>
+
+    <hr />
+
+    <h2>API Endpoints</h2>
+
+    <div class="domain">
+      <h3>Products</h3>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/api/products</code></td>
+            <td>Create a new product</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/api/products</code></td>
+            <td>List all products</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/api/products/{id}</code></td>
+            <td>Get a product by ID</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="domain">
+      <h3>Customers</h3>
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/api/customers</code></td>
+            <td>Register a new customer</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/api/customers</code></td>
+            <td>List all customers</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/api/customers/{id}</code></td>
+            <td>Get a customer by ID</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr />
+
+    <h2>Architecture</h2>
+    <div class="arch">
+      <ul>
+        <li><strong>domain/</strong> — Pure Java entities and domain exceptions; zero framework dependencies</li>
+        <li><strong>application/port/in/</strong> — Use-case interfaces (<code>CreateProductUseCase</code>, <code>RegisterCustomerUseCase</code>, …)</li>
+        <li><strong>application/port/out/</strong> — Repository port interfaces (<code>ProductRepository</code>, <code>CustomerRepository</code>)</li>
+        <li><strong>application/service/</strong> — Package-private use-case implementations</li>
+        <li><strong>adapter/in/web/</strong> — REST controllers and request/response records</li>
+        <li><strong>adapter/out/persistence/</strong> — JPA entities and Spring Data repository adapters</li>
+      </ul>
+    </div>
+
+    <footer>claude-java-demo &mdash; Spring Boot 4.0 / Java 17</footer>
+
+  </div>
+</body>
+</html>
