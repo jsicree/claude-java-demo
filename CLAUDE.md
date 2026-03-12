@@ -98,6 +98,36 @@ com.example.claudejavademo/
 - **Spring Data interfaces** (`SpringData*Repository`) are package-private helper interfaces extending `JpaRepository`; they are not the output ports.
 - To swap persistence, implement the output port (e.g. `ProductRepository`) in a new `adapter.out.*` class without touching any other layer.
 
+### Javadoc
+
+Every Java file must include:
+
+1. **File-level Javadoc** placed before the `package` statement:
+```java
+/**
+ * <One-sentence description of the class/interface/record.>
+ *
+ * @author Joe Sicree (test@test.com)
+ * @since <YYYY-MM-DD of file creation>
+ */
+package com.example.claudejavademo...;
+```
+
+2. **Method-level Javadoc** on every explicit method (constructors, static factories, instance methods):
+```java
+/**
+ * <One-sentence description of what the method does.>
+ *
+ * @param <name>  <description>
+ * @return        <description of return value>
+ * @throws <Type> <condition under which this is thrown>
+ */
+```
+- Include `@param` for every parameter.
+- Include `@return` for every non-void method.
+- Include `@throws` for every checked or domain exception the method raises or propagates.
+- Records with no explicit method bodies are exempt from method-level Javadoc.
+
 ## Current domains
 
 | Domain | Entities | Input ports | Output ports | Domain exceptions |

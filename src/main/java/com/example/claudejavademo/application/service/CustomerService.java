@@ -1,3 +1,9 @@
+/**
+ * Use-case implementation for customer registration and retrieval.
+ *
+ * @author Joe Sicree (test@test.com)
+ * @since 2026-03-11
+ */
 package com.example.claudejavademo.application.service;
 
 import com.example.claudejavademo.application.port.in.GetCustomerUseCase;
@@ -16,10 +22,23 @@ class CustomerService implements RegisterCustomerUseCase, GetCustomerUseCase {
 
     private final CustomerRepository customerRepository;
 
+    /**
+     * Constructs a CustomerService with the required repository.
+     *
+     * @param customerRepository the output port for customer persistence
+     */
     CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
     }
 
+    /**
+     * Registers a new customer, enforcing email uniqueness.
+     *
+     * @param name  the customer name
+     * @param email the customer email address
+     * @return the newly registered and persisted {@code Customer}
+     * @throws CustomerAlreadyExistsException if a customer with the given email already exists
+     */
     @Override
     public Customer registerCustomer(String name, String email) {
         customerRepository.findByEmail(email).ifPresent(existing -> {
@@ -29,12 +48,24 @@ class CustomerService implements RegisterCustomerUseCase, GetCustomerUseCase {
         return customerRepository.save(customer);
     }
 
+    /**
+     * Retrieves a customer by ID.
+     *
+     * @param id the customer ID
+     * @return the matching {@code Customer}
+     * @throws CustomerNotFoundException if no customer with the given ID exists
+     */
     @Override
     public Customer getCustomer(UUID id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new CustomerNotFoundException(id));
     }
 
+    /**
+     * Returns all customers.
+     *
+     * @return a list of all customers; empty if none exist
+     */
     @Override
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
