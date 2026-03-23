@@ -6,6 +6,7 @@
  */
 package com.example.claudejavademo.adapter.in.web;
 
+import com.example.claudejavademo.application.port.in.DeleteCustomerUseCase;
 import com.example.claudejavademo.application.port.in.GetCustomerUseCase;
 import com.example.claudejavademo.application.port.in.RegisterCustomerUseCase;
 import com.example.claudejavademo.domain.model.Customer;
@@ -21,16 +22,19 @@ class CustomerController {
 
     private final RegisterCustomerUseCase registerCustomer;
     private final GetCustomerUseCase getCustomer;
+    private final DeleteCustomerUseCase deleteCustomer;
 
     /**
      * Constructs a CustomerController with the required use cases.
      *
      * @param registerCustomer use case for registering customers
      * @param getCustomer      use case for retrieving customers
+     * @param deleteCustomer   use case for deleting customers
      */
-    CustomerController(RegisterCustomerUseCase registerCustomer, GetCustomerUseCase getCustomer) {
+    CustomerController(RegisterCustomerUseCase registerCustomer, GetCustomerUseCase getCustomer, DeleteCustomerUseCase deleteCustomer) {
         this.registerCustomer = registerCustomer;
         this.getCustomer = getCustomer;
+        this.deleteCustomer = deleteCustomer;
     }
 
     /**
@@ -69,5 +73,17 @@ class CustomerController {
         return getCustomer.getAllCustomers().stream()
                 .map(CustomerResponse::from)
                 .toList();
+    }
+
+    /**
+     * Handles DELETE /api/customers/{id} — deletes a customer.
+     *
+     * @param id the customer ID
+     * @throws com.example.claudejavademo.domain.exception.CustomerNotFoundException if no customer with the given ID exists
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable UUID id) {
+        deleteCustomer.deleteCustomer(id);
     }
 }

@@ -62,6 +62,16 @@ class JpaProductRepository implements ProductRepository {
     }
 
     /**
+     * Deletes the product with the given identifier.
+     *
+     * @param id the product ID
+     */
+    @Override
+    public void deleteById(UUID id) {
+        spring.deleteById(id.toString());
+    }
+
+    /**
      * Converts a domain {@code Product} to a {@code ProductJpaEntity}.
      *
      * @param p     the domain product

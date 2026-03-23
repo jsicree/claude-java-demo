@@ -73,6 +73,16 @@ class JpaCustomerRepository implements CustomerRepository {
     }
 
     /**
+     * Deletes the customer with the given identifier.
+     *
+     * @param id the customer ID
+     */
+    @Override
+    public void deleteById(UUID id) {
+        spring.deleteById(id.toString());
+    }
+
+    /**
      * Converts a domain {@code Customer} to a {@code CustomerJpaEntity}.
      *
      * @param c     the domain customer

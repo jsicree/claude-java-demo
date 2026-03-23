@@ -6,6 +6,7 @@
  */
 package com.example.claudejavademo.application.service;
 
+import com.example.claudejavademo.application.port.in.DeleteCustomerUseCase;
 import com.example.claudejavademo.application.port.in.GetCustomerUseCase;
 import com.example.claudejavademo.application.port.in.RegisterCustomerUseCase;
 import com.example.claudejavademo.application.port.out.CustomerRepository;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-class CustomerService implements RegisterCustomerUseCase, GetCustomerUseCase {
+class CustomerService implements RegisterCustomerUseCase, GetCustomerUseCase, DeleteCustomerUseCase {
 
     private final CustomerRepository customerRepository;
 
@@ -69,5 +70,18 @@ class CustomerService implements RegisterCustomerUseCase, GetCustomerUseCase {
     @Override
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
+    }
+
+    /**
+     * Deletes the customer with the given ID.
+     *
+     * @param id the customer ID
+     * @throws CustomerNotFoundException if no customer with the given ID exists
+     */
+    @Override
+    public void deleteCustomer(UUID id) {
+        customerRepository.findById(id)
+                .orElseThrow(() -> new CustomerNotFoundException(id));
+        customerRepository.deleteById(id);
     }
 }

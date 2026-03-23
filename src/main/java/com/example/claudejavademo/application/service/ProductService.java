@@ -7,6 +7,7 @@
 package com.example.claudejavademo.application.service;
 
 import com.example.claudejavademo.application.port.in.CreateProductUseCase;
+import com.example.claudejavademo.application.port.in.DeleteProductUseCase;
 import com.example.claudejavademo.application.port.in.GetProductUseCase;
 import com.example.claudejavademo.application.port.out.ProductRepository;
 import com.example.claudejavademo.domain.exception.ProductNotFoundException;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-class ProductService implements CreateProductUseCase, GetProductUseCase {
+class ProductService implements CreateProductUseCase, GetProductUseCase, DeleteProductUseCase {
 
     private final ProductRepository productRepository;
 
@@ -65,5 +66,18 @@ class ProductService implements CreateProductUseCase, GetProductUseCase {
     @Override
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    /**
+     * Deletes the product with the given ID.
+     *
+     * @param id the product ID
+     * @throws ProductNotFoundException if no product with the given ID exists
+     */
+    @Override
+    public void deleteProduct(UUID id) {
+        productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+        productRepository.deleteById(id);
     }
 }
