@@ -3,3 +3,7 @@
 .gitattributes
 target/
 *.md
+frontend/node_modules/
+frontend/node/
+frontend/dist/
+.frontend-maven-plugin/

@@ -36,4 +36,11 @@ public interface ProductRepository {
      * @return a list of all products; empty if none exist
      */
     List<Product> findAll();
+
+    /**
+     * Deletes the product with the given identifier.
+     *
+     * @param id the product ID
+     */
+    void deleteById(UUID id);
 }

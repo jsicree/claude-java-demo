@@ -7,6 +7,7 @@
 package com.example.claudejavademo.adapter.in.web;
 
 import com.example.claudejavademo.application.port.in.CreateProductUseCase;
+import com.example.claudejavademo.application.port.in.DeleteProductUseCase;
 import com.example.claudejavademo.application.port.in.GetProductUseCase;
 import com.example.claudejavademo.domain.model.Product;
 import org.springframework.http.HttpStatus;
@@ -21,16 +22,19 @@ class ProductController {
 
     private final CreateProductUseCase createProduct;
     private final GetProductUseCase getProduct;
+    private final DeleteProductUseCase deleteProduct;
 
     /**
      * Constructs a ProductController with the required use cases.
      *
      * @param createProduct use case for creating products
      * @param getProduct    use case for retrieving products
+     * @param deleteProduct use case for deleting products
      */
-    ProductController(CreateProductUseCase createProduct, GetProductUseCase getProduct) {
+    ProductController(CreateProductUseCase createProduct, GetProductUseCase getProduct, DeleteProductUseCase deleteProduct) {
         this.createProduct = createProduct;
         this.getProduct = getProduct;
+        this.deleteProduct = deleteProduct;
     }
 
     /**
@@ -68,5 +72,17 @@ class ProductController {
         return getProduct.getAllProducts().stream()
                 .map(ProductResponse::from)
                 .toList();
+    }
+
+    /**
+     * Handles DELETE /api/products/{id} — deletes a product.
+     *
+     * @param id the product ID
+     * @throws com.example.claudejavademo.domain.exception.ProductNotFoundException if no product with the given ID exists
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void delete(@PathVariable UUID id) {
+        deleteProduct.deleteProduct(id);
     }
 }

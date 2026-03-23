@@ -44,4 +44,11 @@ public interface CustomerRepository {
      * @return a list of all customers; empty if none exist
      */
     List<Customer> findAll();
+
+    /**
+     * Deletes the customer with the given identifier.
+     *
+     * @param id the customer ID
+     */
+    void deleteById(UUID id);
 }
