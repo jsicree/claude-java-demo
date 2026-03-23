@@ -13,13 +13,23 @@ Spring Boot demo project exploring hexagonal architecture patterns with Java.
 - **Database** MySQL 8.4 (production) · H2 (tests)
 - **ORM** Spring Data JPA (Hibernate)
 - **API Docs** OpenAPI/Swagger (`springdoc-openapi-starter-webmvc-ui` 3.0.1)
+- **Frontend** React 18 + Vite SPA (built via `frontend-maven-plugin`, served from `src/main/resources/static`)
 
 ## Common commands
 
 ```bash
 ./mvnw spring-boot:run      # run the app (port 8080, requires MySQL)
 ./mvnw test                 # run tests (uses H2 in-memory)
-./mvnw package              # build fat JAR → target/
+./mvnw package              # build fat JAR → target/ (also builds frontend)
+```
+
+### Frontend development
+
+```bash
+cd frontend
+npm install                 # install dependencies (first time)
+npm run dev                 # start Vite dev server (port 5173, proxies /api → 8080)
+npm run build               # build into src/main/resources/static
 ```
 
 ## Docker
@@ -50,11 +60,13 @@ C4Context
     Person(client, "API Consumer", "Any HTTP client: curl, browser, frontend app")
 
     System_Boundary(app, "claude-java-demo") {
+        System(ui, "React SPA", "React 18 · Vite\nServed from / — Products & Customers tabs")
         System(api, "REST API", "Spring Boot 4.0 · Java 17\nExposes /api/products and /api/customers")
         SystemDb(db, "MySQL 8.4", "Persistent relational store\nSchema managed by Hibernate DDL")
     }
 
-    Rel(client, api, "HTTP/REST", "JSON · port 8080")
+    Rel(client, ui, "HTTP", "port 8080")
+    Rel(ui, api, "fetch", "JSON · /api/**")
     Rel(api, db, "JPA / JDBC", "TCP 3306")
 ```
 
@@ -97,6 +109,8 @@ com.example.claudejavademo/
 - **JPA entities** (`*JpaEntity`) live in `adapter.out.persistence` and are never exposed outside that package. Each adapter repository converts between JPA entities and domain objects.
 - **Spring Data interfaces** (`SpringData*Repository`) are package-private helper interfaces extending `JpaRepository`; they are not the output ports.
 - To swap persistence, implement the output port (e.g. `ProductRepository`) in a new `adapter.out.*` class without touching any other layer.
+- **`GlobalExceptionHandler`** (`adapter.in.web`) maps domain exceptions to HTTP status codes (404 for NotFound, 409 for AlreadyExists).
+- **`WebConfig`** (`adapter.in.web`) enables CORS on `/api/**` for local frontend dev.
 
 ### Javadoc
 
@@ -132,8 +146,8 @@ package com.example.claudejavademo...;
 
 | Domain | Entities | Input ports | Output ports | Domain exceptions |
 |--------|----------|-------------|--------------|-------------------|
-| Product | `Product` | `CreateProductUseCase`, `GetProductUseCase` | `ProductRepository` | `ProductNotFoundException` |
-| Customer | `Customer` | `RegisterCustomerUseCase`, `GetCustomerUseCase` | `CustomerRepository` | `CustomerNotFoundException`, `CustomerAlreadyExistsException` |
+| Product | `Product` | `CreateProductUseCase`, `GetProductUseCase`, `DeleteProductUseCase` | `ProductRepository` | `ProductNotFoundException` |
+| Customer | `Customer` | `RegisterCustomerUseCase`, `GetCustomerUseCase`, `DeleteCustomerUseCase` | `CustomerRepository` | `CustomerNotFoundException`, `CustomerAlreadyExistsException` |
 
 ## API endpoints
 
@@ -142,11 +156,13 @@ package com.example.claudejavademo...;
 | `POST` | `/api/products` | Create a product | 201 |
 | `GET` | `/api/products` | List all products | 200 |
 | `GET` | `/api/products/{id}` | Get product by UUID | 200 |
+| `DELETE` | `/api/products/{id}` | Delete a product | 204 |
 | `POST` | `/api/customers` | Register a customer | 201 |
 | `GET` | `/api/customers` | List all customers | 200 |
 | `GET` | `/api/customers/{id}` | Get customer by UUID | 200 |
+| `DELETE` | `/api/customers/{id}` | Delete a customer | 204 |
 
-Swagger UI is available at **`http://localhost:8080/swagger-ui.html`** when the app is running.
+The React SPA is served at **`http://localhost:8080/`** and Swagger UI is available at **`http://localhost:8080/swagger-ui.html`** when the app is running.
 
 ## Persistence
 
@@ -188,7 +204,7 @@ Customer.register(String name, String email)             // static factory (gene
 
 1. **Domain model** — add entity class to `domain/model/` (no framework imports).
 2. **Domain exceptions** — add to `domain/exception/` extending `RuntimeException`.
-3. **Input ports** — add use-case interfaces to `application/port/in/`.
+3. **Input ports** — add use-case interfaces to `application/port/in/` (create, get, delete, etc.).
 4. **Output port** — add repository interface to `application/port/out/`.
 5. **Service** — add package-private `@Service` class to `application/service/` implementing the input ports.
 6. **JPA entity** — add `*JpaEntity` class to `adapter/out/persistence/`.
