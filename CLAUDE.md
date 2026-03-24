@@ -13,23 +13,13 @@ Spring Boot demo project exploring hexagonal architecture patterns with Java.
 - **Database** MySQL 8.4 (production) · H2 (tests)
 - **ORM** Spring Data JPA (Hibernate)
 - **API Docs** OpenAPI/Swagger (`springdoc-openapi-starter-webmvc-ui` 3.0.1)
-- **Frontend** React 18 + Vite SPA (built via `frontend-maven-plugin`, served from `src/main/resources/static`)
 
 ## Common commands
 
 ```bash
 ./mvnw spring-boot:run      # run the app (port 8080, requires MySQL)
 ./mvnw test                 # run tests (uses H2 in-memory)
-./mvnw package              # build fat JAR → target/ (also builds frontend)
-```
-
-### Frontend development
-
-```bash
-cd frontend
-npm install                 # install dependencies (first time)
-npm run dev                 # start Vite dev server (port 5173, proxies /api → 8080)
-npm run build               # build into src/main/resources/static
+./mvnw package              # build fat JAR → target/
 ```
 
 ## Docker
@@ -57,16 +47,17 @@ docker ps                                             # list running containers
 C4Context
     title System Context — claude-java-demo
 
-    Person(client, "API Consumer", "Any HTTP client: curl, browser, frontend app")
+    Person(client, "API Consumer", "Any HTTP client: curl, Swagger UI, or the React frontend")
+
+    System_Ext(ui, "claude-react-demo", "React 18 · Vite · nginx\nStandalone SPA — Products & Customers tabs")
 
     System_Boundary(app, "claude-java-demo") {
-        System(ui, "React SPA", "React 18 · Vite\nServed from / — Products & Customers tabs")
         System(api, "REST API", "Spring Boot 4.0 · Java 17\nExposes /api/products and /api/customers")
         SystemDb(db, "MySQL 8.4", "Persistent relational store\nSchema managed by Hibernate DDL")
     }
 
-    Rel(client, ui, "HTTP", "port 8080")
-    Rel(ui, api, "fetch", "JSON · /api/**")
+    Rel(client, api, "HTTP", "port 8080")
+    Rel(ui, api, "fetch (CORS)", "JSON · /api/**")
     Rel(api, db, "JPA / JDBC", "TCP 3306")
 ```
 
@@ -110,7 +101,7 @@ com.example.claudejavademo/
 - **Spring Data interfaces** (`SpringData*Repository`) are package-private helper interfaces extending `JpaRepository`; they are not the output ports.
 - To swap persistence, implement the output port (e.g. `ProductRepository`) in a new `adapter.out.*` class without touching any other layer.
 - **`GlobalExceptionHandler`** (`adapter.in.web`) maps domain exceptions to HTTP status codes (404 for NotFound, 409 for AlreadyExists).
-- **`WebConfig`** (`adapter.in.web`) enables CORS on `/api/**` for local frontend dev.
+- **`WebConfig`** (`adapter.in.web`) enables CORS on `/api/**` for cross-origin requests from the standalone React frontend (`claude-react-demo`).
 
 ### Javadoc
 
@@ -162,7 +153,7 @@ package com.example.claudejavademo...;
 | `GET` | `/api/customers/{id}` | Get customer by UUID | 200 |
 | `DELETE` | `/api/customers/{id}` | Delete a customer | 204 |
 
-The React SPA is served at **`http://localhost:8080/`** and Swagger UI is available at **`http://localhost:8080/swagger-ui.html`** when the app is running.
+Swagger UI is available at **`http://localhost:8080/swagger-ui.html`** when the app is running. The React SPA is in the separate **`claude-react-demo`** project.
 
 ## Persistence
 
