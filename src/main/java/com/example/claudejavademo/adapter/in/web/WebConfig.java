@@ -14,7 +14,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 class WebConfig implements WebMvcConfigurer {
 
     /**
-     * Allows all origins on {@code /api/**} to support local development with the Vite dev server.
+     * Allows all origins on {@code /api/**} to support cross-origin requests from the standalone
+     * React frontend (claude-react-demo) in both development and production environments.
      *
      * @param registry the CORS registry
      */
