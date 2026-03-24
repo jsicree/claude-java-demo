@@ -1,6 +1,6 @@
 # claude-java-demo
 
-Spring Boot demo project exploring hexagonal architecture patterns with Java.
+Spring Boot REST API exploring hexagonal architecture patterns with Java.
 
 **GitHub:** https://github.com/jsicree/claude-java-demo
 
@@ -61,14 +61,29 @@ C4Context
     Rel(api, db, "JPA / JDBC", "TCP 3306")
 ```
 
+## API endpoints
+
+Swagger UI is available at **`http://localhost:8080/swagger-ui.html`** when the app is running.
+
+| Method | Path | Description | Status |
+|--------|------|-------------|--------|
+| `POST` | `/api/products` | Create a product | 201 |
+| `GET` | `/api/products` | List all products | 200 |
+| `GET` | `/api/products/{id}` | Get product by UUID | 200 |
+| `DELETE` | `/api/products/{id}` | Delete a product | 204 |
+| `POST` | `/api/customers` | Register a customer | 201 |
+| `GET` | `/api/customers` | List all customers | 200 |
+| `GET` | `/api/customers/{id}` | Get customer by UUID | 200 |
+| `DELETE` | `/api/customers/{id}` | Delete a customer | 204 |
+
 ## Architecture
 
 Hexagonal (Ports & Adapters). Dependency rule: outer layers depend on inner layers, never the reverse.
 
 ```
-domain → (nothing)
+domain      → (nothing)
 application → domain
-adapter → application, domain
+adapter     → application, domain
 ```
 
 ### Package layout
@@ -76,16 +91,16 @@ adapter → application, domain
 ```
 com.example.claudejavademo/
 ├── domain/
-│   ├── model/          # entities, aggregates, value objects (no framework imports)
-│   └── exception/      # domain-specific runtime exceptions
+│   ├── model/           # entities, aggregates, value objects (no framework imports)
+│   └── exception/       # domain-specific runtime exceptions
 ├── application/
 │   ├── port/
-│   │   ├── in/         # input port interfaces (use cases)
-│   │   └── out/        # output port interfaces (repositories)
-│   └── service/        # use-case implementations (package-private)
+│   │   ├── in/          # input port interfaces (use cases)
+│   │   └── out/         # output port interfaces (repositories)
+│   └── service/         # use-case implementations (package-private)
 └── adapter/
     ├── in/
-    │   └── web/        # REST controllers, request/response records
+    │   └── web/         # REST controllers, request/response records
     └── out/
         └── persistence/ # JPA entities + repository implementations
 ```
@@ -140,21 +155,6 @@ package com.example.claudejavademo...;
 | Product | `Product` | `CreateProductUseCase`, `GetProductUseCase`, `DeleteProductUseCase` | `ProductRepository` | `ProductNotFoundException` |
 | Customer | `Customer` | `RegisterCustomerUseCase`, `GetCustomerUseCase`, `DeleteCustomerUseCase` | `CustomerRepository` | `CustomerNotFoundException`, `CustomerAlreadyExistsException` |
 
-## API endpoints
-
-| Method | Path | Description | Status |
-|--------|------|-------------|--------|
-| `POST` | `/api/products` | Create a product | 201 |
-| `GET` | `/api/products` | List all products | 200 |
-| `GET` | `/api/products/{id}` | Get product by UUID | 200 |
-| `DELETE` | `/api/products/{id}` | Delete a product | 204 |
-| `POST` | `/api/customers` | Register a customer | 201 |
-| `GET` | `/api/customers` | List all customers | 200 |
-| `GET` | `/api/customers/{id}` | Get customer by UUID | 200 |
-| `DELETE` | `/api/customers/{id}` | Delete a customer | 204 |
-
-Swagger UI is available at **`http://localhost:8080/swagger-ui.html`** when the app is running. The React SPA is in the separate **`claude-react-demo`** project.
-
 ## Persistence
 
 JPA/MySQL via Spring Data. Each domain has:
@@ -165,10 +165,14 @@ JPA/MySQL via Spring Data. Each domain has:
 | `SpringData*Repository` | Package-private `JpaRepository` extension used internally by the adapter |
 | `Jpa*Repository` | `@Repository` implementing the application output port; owns entity↔domain conversions |
 
-**Production** (`src/main/resources/application.properties`):
-- URL: `jdbc:mysql://localhost:3306/claudedemo`
+**Production — Docker Compose** (`src/main/resources/application.properties` overridden by `docker-compose.yml`):
+- URL: `jdbc:mysql://mysql:3306/claudedemo` (uses the `mysql` Docker Compose service name)
 - Credentials: `demo` / `demo`
 - DDL: `hibernate.ddl-auto=update`
+
+**Production — local (`./mvnw spring-boot:run`)**:
+- URL: `jdbc:mysql://localhost:3306/claudedemo`
+- Credentials: `demo` / `demo`
 
 **Tests** (`src/test/resources/application.properties`):
 - URL: `jdbc:h2:mem:testdb`
@@ -203,3 +207,7 @@ Customer.register(String name, String email)             // static factory (gene
 8. **JPA repository adapter** — add `@Repository` class implementing the output port.
 9. **Controller** — add package-private `@RestController` to `adapter/in/web/`.
 10. **Request/Response records** — add to `adapter/in/web/`.
+
+## Frontend
+
+The companion SPA is **claude-react-demo** (React 18 · Vite · nginx). It runs on port 3000 and proxies `/api/**` requests to this service on port 8080. Start this backend first before running the frontend. See its `CLAUDE.md` for startup instructions.
