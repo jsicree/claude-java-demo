@@ -195,6 +195,44 @@ Customer(UUID id, String name, String email)             // full constructor
 Customer.register(String name, String email)             // static factory (generates UUID)
 ```
 
+## Testing
+
+49 tests across all four layers; `./mvnw test` runs everything against H2 — no external services required.
+
+### Strategy
+
+| Layer | Test class(es) | Approach |
+|-------|---------------|----------|
+| Domain model | `domain/model/ProductTest`, `CustomerTest` | Pure JUnit 5 — no context, no mocks |
+| Application services | `application/service/ProductServiceTest`, `CustomerServiceTest` | `@ExtendWith(MockitoExtension.class)`; output ports mocked |
+| Web adapters | `adapter/in/web/ProductControllerTest`, `CustomerControllerTest` | `MockMvcBuilders.standaloneSetup()` + `GlobalExceptionHandler` |
+| Persistence adapters | `adapter/out/persistence/JpaProductRepositoryTest`, `JpaCustomerRepositoryTest` | `@SpringBootTest` + H2; `deleteAll()` in `@BeforeEach` |
+
+### Spring Boot 4.0 constraints
+
+`@WebMvcTest` and `@DataJpaTest` were removed in Spring Boot 4.0. Controller tests use `standaloneSetup` (no Spring context); persistence tests fall back to `@SpringBootTest`. `@MockBean` is also gone — use `@MockitoBean` (`org.springframework.test.context.bean.override.mockito`) when mocking beans in a Spring context.
+
+### Package placement
+
+All service and adapter classes are package-private, so test classes must co-locate with the class under test:
+
+```
+src/test/java/com/example/claudejavademo/
+├── domain/model/              # ProductTest, CustomerTest
+├── application/service/       # ProductServiceTest, CustomerServiceTest
+├── adapter/in/web/            # ProductControllerTest, CustomerControllerTest
+└── adapter/out/persistence/   # JpaProductRepositoryTest, JpaCustomerRepositoryTest
+```
+
+### Adding tests for a new domain
+
+Mirror the existing pattern:
+
+1. `domain/model/<Entity>Test` — factory method, constructor, validation logic.
+2. `application/service/<Entity>ServiceTest` — mock the output port; cover all use-case methods and exception paths.
+3. `adapter/in/web/<Entity>ControllerTest` — `standaloneSetup` + `GlobalExceptionHandler`; assert status codes and response shape.
+4. `adapter/out/persistence/Jpa<Entity>RepositoryTest` — `@SpringBootTest` + H2; `springRepo.deleteAll()` in `@BeforeEach`; cover save, findById, findAll, deleteById, and any custom query methods.
+
 ## Adding a new domain (checklist)
 
 1. **Domain model** — add entity class to `domain/model/` (no framework imports).
