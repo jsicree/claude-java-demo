@@ -52,6 +52,17 @@ Expects MySQL at `localhost:3306/claudedemo` with credentials `demo` / `demo`.
 ./mvnw test
 ```
 
+Tests use H2 in-memory and require no external services. There are 49 tests across four layers:
+
+| Layer | Test class(es) | Approach |
+|-------|---------------|----------|
+| Domain model | `ProductTest`, `CustomerTest` | Pure JUnit 5 — no Spring context |
+| Application services | `ProductServiceTest`, `CustomerServiceTest` | Mockito — repository mocked via `@Mock` |
+| Web adapters | `ProductControllerTest`, `CustomerControllerTest` | `MockMvcBuilders.standaloneSetup()` with `GlobalExceptionHandler` wired in |
+| Persistence adapters | `JpaProductRepositoryTest`, `JpaCustomerRepositoryTest` | `@SpringBootTest` with H2; `deleteAll()` cleanup in `@BeforeEach` |
+
+> **Note:** Spring Boot 4.0 removes `@WebMvcTest` and `@DataJpaTest`. Controller tests use standalone MockMvc; persistence tests use the full `@SpringBootTest` context with H2.
+
 ## API Reference
 
 | Method | Path | Description |
